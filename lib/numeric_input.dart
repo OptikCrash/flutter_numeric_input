@@ -5,7 +5,6 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 enum _InputAction { increment, decrement, reset }
 
@@ -17,7 +16,7 @@ enum Style {
   roundInline
 }
 
-class NumericInput extends ConsumerWidget {
+class NumericInput extends StatefulWidget {
   NumericInput({
     Key? key,
     this.style = Style.inlineStackButtons,
@@ -61,10 +60,8 @@ class NumericInput extends ConsumerWidget {
         assert(useCupertino == null || useMaterial == null),
         super(key: key);
 
-  final String _counterId = 'numeric-input-${DateTime.now().toIso8601String()}';
   final TextEditingController textEditingController;
   late final Style style;
-  late final _NumericBloc bloc;
   final num initialValue;
   final String label;
   final bool isNegativeValid;
@@ -102,57 +99,66 @@ class NumericInput extends ConsumerWidget {
   final ThemeData? materialTheme;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    bloc = isInteger
+  State<NumericInput> createState() => _NumericInput();
+}
+
+class _NumericInput extends State<NumericInput> {
+  final String _counterId = 'numeric-input-${DateTime.now().toIso8601String()}';
+  late final _NumericBloc bloc;
+
+  @override
+  Widget build(BuildContext context) {
+    bloc = widget.isInteger
         ? _IntBloc(
             context: context,
-            initialValue: initialValue.toInt(),
-            isNegativeValid: isNegativeValid)
+            initialValue: widget.initialValue.toInt(),
+            isNegativeValid: widget.isNegativeValid)
         : _DoubleBloc(
             context: context,
-            initialValue: initialValue.toDouble(),
-            isNegativeValid: isNegativeValid);
+            initialValue: widget.initialValue.toDouble(),
+            isNegativeValid: widget.isNegativeValid);
     bool _isIOS = false;
-    if (useMaterial == null && useCupertino == null) {
+    if (widget.useMaterial == null && widget.useCupertino == null) {
       _isIOS = Platform.isIOS || Platform.isMacOS;
-    } else if (useMaterial == true) {
+    } else if (widget.useMaterial == true) {
       _isIOS = false;
-    } else if (useCupertino == true) {
+    } else if (widget.useCupertino == true) {
       _isIOS = true;
     }
     CupertinoThemeData? _iosTheme;
     ThemeData? _materialTheme;
     if (_isIOS) {
-      _iosTheme = iosTheme ?? CupertinoTheme.of(context);
+      _iosTheme = widget.iosTheme ?? CupertinoTheme.of(context);
     } else {
-      _materialTheme = materialTheme ?? Theme.of(context);
+      _materialTheme = widget.materialTheme ?? Theme.of(context);
     }
-    Color _dividerColor = dividerColor ?? Theme.of(context).dividerColor;
-    Color _inputBoxColor = inputBoxColor ?? Theme.of(context).canvasColor;
+    Color _dividerColor = widget.dividerColor ?? Theme.of(context).dividerColor;
+    Color _inputBoxColor =
+        widget.inputBoxColor ?? Theme.of(context).canvasColor;
     Color _inputBorderColor =
-        inputBorderColor ?? Theme.of(context).primaryColorDark;
+        widget.inputBorderColor ?? Theme.of(context).primaryColorDark;
     Color _incrementButtonColor =
-        incrementButtonColor ?? Theme.of(context).colorScheme.secondary;
-    Color _incrementButtonIconColor =
-        incrementButtonIconColor ?? Theme.of(context).colorScheme.onSecondary;
+        widget.incrementButtonColor ?? Theme.of(context).colorScheme.secondary;
+    Color _incrementButtonIconColor = widget.incrementButtonIconColor ??
+        Theme.of(context).colorScheme.onSecondary;
     Color _decrementButtonColor =
-        decrementButtonColor ?? Theme.of(context).colorScheme.secondary;
-    Color _decrementButtonIconColor =
-        decrementButtonIconColor ?? Theme.of(context).colorScheme.onSecondary;
+        widget.decrementButtonColor ?? Theme.of(context).colorScheme.secondary;
+    Color _decrementButtonIconColor = widget.decrementButtonIconColor ??
+        Theme.of(context).colorScheme.onSecondary;
     Color _resetButtonColor =
-        resetButtonColor ?? Theme.of(context).colorScheme.secondary;
-    Color _resetButtonIconColor =
-        resetButtonIconColor ?? Theme.of(context).colorScheme.onSecondary;
+        widget.resetButtonColor ?? Theme.of(context).colorScheme.secondary;
+    Color _resetButtonIconColor = widget.resetButtonIconColor ??
+        Theme.of(context).colorScheme.onSecondary;
     BorderRadius _borderRadius =
-        borderRadius ?? const BorderRadius.all(Radius.circular(4.0));
-    BorderStyle _borderStyle = borderStyle ?? BorderStyle.solid;
-    TextStyle _labelTextStyle = labelTextStyle ??
+        widget.borderRadius ?? const BorderRadius.all(Radius.circular(4.0));
+    BorderStyle _borderStyle = widget.borderStyle ?? BorderStyle.solid;
+    TextStyle _labelTextStyle = widget.labelTextStyle ??
         TextStyle(
             color: Theme.of(context).primaryColor,
             fontSize: 24,
             letterSpacing: 0);
-    double _borderWidth = borderWidth;
-    BorderSide _borderSide = borderSide ??
+    double _borderWidth = widget.borderWidth;
+    BorderSide _borderSide = widget.borderSide ??
         BorderSide(
           color: _inputBorderColor,
           style: _borderStyle,
@@ -178,7 +184,7 @@ class NumericInput extends ConsumerWidget {
   }
 
   Widget _ioWidget(_WidgetParams params) {
-    switch (style) {
+    switch (widget.style) {
       case Style.inline:
         return _rowInline(params);
       case Style.inlineSymmetric:
@@ -211,23 +217,26 @@ class NumericInput extends ConsumerWidget {
                       : Container(),
                   Row(
                     children: [
-                      canDecrement /* Decrement Button */
+                      widget.canDecrement /* Decrement Button */
                           ? _decrementButton(params.decrementButtonColor,
                               params.decrementIconColor, params.isIOS)
                           : Container(),
                       (params.isIOS &&
-                              (canDecrement && canIncrement ||
-                                  canDecrement && canReset)) /* Divider */
+                              (widget.canDecrement && widget.canIncrement ||
+                                  widget.canDecrement &&
+                                      widget.canReset)) /* Divider */
                           ? _dividerHorizontal(params)
                           : Container(),
-                      canIncrement /* Increment Button */
+                      widget.canIncrement /* Increment Button */
                           ? _incrementButton(params.incrementButtonColor,
                               params.incrementIconColor, params.isIOS)
                           : Container(),
-                      (params.isIOS && canIncrement && canReset) /* Divider */
+                      (params.isIOS &&
+                              widget.canIncrement &&
+                              widget.canReset) /* Divider */
                           ? _dividerHorizontal(params)
                           : Container(),
-                      canReset /* Clear Button */
+                      widget.canReset /* Clear Button */
                           ? _resetButton(params.resetButtonColor,
                               params.resetIconColor, params.isIOS)
                           : Container(),
@@ -254,7 +263,7 @@ class NumericInput extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      canDecrement
+                      widget.canDecrement
                           ? _decrementButton(params.decrementButtonColor,
                               params.decrementIconColor, params.isIOS)
                           : Container()
@@ -275,14 +284,16 @@ class NumericInput extends ConsumerWidget {
                   params.isIOS ? const SizedBox(height: 36) : Container(),
                   Row(
                     children: [
-                      canIncrement /* Increment Button */
+                      widget.canIncrement /* Increment Button */
                           ? _incrementButton(params.incrementButtonColor,
                               params.incrementIconColor, params.isIOS)
                           : Container(),
-                      (params.isIOS && canIncrement && canReset) /* Divider */
+                      (params.isIOS &&
+                              widget.canIncrement &&
+                              widget.canReset) /* Divider */
                           ? _dividerHorizontal(params)
                           : Container(),
-                      canReset /* Clear Button */
+                      widget.canReset /* Clear Button */
                           ? _resetButton(params.resetButtonColor,
                               params.resetIconColor, params.isIOS)
                           : Container(),
@@ -406,25 +417,26 @@ class NumericInput extends ConsumerWidget {
 
   Widget _rowDisplay(Color fieldColor, BorderSide side, BorderRadius radius,
           TextStyle labelStyle, bool isIOS) =>
-      (style == Style.roundInline || style == Style.roundStacked)
+      (widget.style == Style.roundInline || widget.style == Style.roundStacked)
           ? SizedBox(
               width: 54,
               height: 54,
               child: StreamBuilder(
                   stream: bloc.stream,
-                  initialData: initialValue,
+                  initialData: widget.initialValue,
                   builder: (context, snapshot) {
-                    textEditingController.text = snapshot.data.toString();
+                    widget.textEditingController.text =
+                        snapshot.data.toString();
                     return TextFormField(
                         textAlign: TextAlign.center,
-                        controller: textEditingController,
-                        readOnly: readOnly,
+                        controller: widget.textEditingController,
+                        readOnly: widget.readOnly,
                         keyboardType: TextInputType.number,
-                        style: inputTextStyle,
+                        style: widget.inputTextStyle,
                         decoration: InputDecoration(
                           fillColor: fieldColor,
                           // labelText: label,
-                          labelStyle: labelTextStyle,
+                          labelStyle: widget.labelTextStyle,
                           border: OutlineInputBorder(
                             borderSide: side,
                             borderRadius:
@@ -440,11 +452,11 @@ class NumericInput extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        (label.isNotEmpty)
+                        (widget.label.isNotEmpty)
                             ? Padding(
                                 padding: const EdgeInsets.only(left: 18),
                                 child: Text(
-                                  label,
+                                  widget.label,
                                   style: labelStyle,
                                 ),
                               )
@@ -452,31 +464,30 @@ class NumericInput extends ConsumerWidget {
                         CupertinoFormRow(
                           child: StreamBuilder(
                             stream: bloc.stream,
-                            initialData: initialValue,
+                            initialData: widget.initialValue,
                             builder: (context, snapshot) {
-                              textEditingController.text =
+                              widget.textEditingController.text =
                                   snapshot.data.toString();
                               return FormField(
                                 builder: (FormFieldState<String> state) =>
                                     CupertinoTextField(
-                                  key: key,
-                                  style: inputTextStyle,
+                                  style: widget.inputTextStyle,
                                   padding: const EdgeInsets.all(12),
-                                  controller: textEditingController,
-                                  readOnly: readOnly,
+                                  controller: widget.textEditingController,
+                                  readOnly: widget.readOnly,
                                   keyboardType: TextInputType.number,
-                                  prefix: prefix,
-                                  prefixMode: prefixMode,
+                                  prefix: widget.prefix,
+                                  prefixMode: widget.prefixMode,
                                   suffix: Padding(
                                     padding: const EdgeInsets.only(right: 10),
-                                    child: suffix,
+                                    child: widget.suffix,
                                   ),
-                                  suffixMode: suffixMode,
+                                  suffixMode: widget.suffixMode,
                                   textAlign: TextAlign.start,
-                                  clearButtonMode: clearButtonMode,
-                                  placeholder: label,
-                                  placeholderStyle: labelTextStyle,
-                                  decoration: decoration ??
+                                  clearButtonMode: widget.clearButtonMode,
+                                  placeholder: widget.label,
+                                  placeholderStyle: widget.labelTextStyle,
+                                  decoration: widget.decoration ??
                                       BoxDecoration(
                                         color: fieldColor,
                                         border: Border(
@@ -498,19 +509,19 @@ class NumericInput extends ConsumerWidget {
                       padding: const EdgeInsets.only(top: 8),
                       child: StreamBuilder(
                           stream: bloc.stream,
-                          initialData: initialValue,
+                          initialData: widget.initialValue,
                           builder: (context, snapshot) {
-                            textEditingController.text =
+                            widget.textEditingController.text =
                                 snapshot.data.toString();
                             return TextFormField(
-                              readOnly: readOnly,
-                              controller: textEditingController,
+                              readOnly: widget.readOnly,
+                              controller: widget.textEditingController,
                               keyboardType: TextInputType.number,
-                              style: inputTextStyle,
+                              style: widget.inputTextStyle,
                               decoration: InputDecoration(
                                 fillColor: fieldColor,
-                                labelText: label,
-                                labelStyle: labelTextStyle,
+                                labelText: widget.label,
+                                labelStyle: widget.labelTextStyle,
                                 border: OutlineInputBorder(
                                   borderSide: side,
                                   borderRadius: radius,

@@ -10,7 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  hooks_riverpod: ^1.0.0
 
 dev_dependencies:
   flutter_test:
