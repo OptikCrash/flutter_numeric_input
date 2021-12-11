@@ -17,7 +17,7 @@ enum Style {
 }
 
 class NumericInput extends StatefulWidget {
-  NumericInput({
+  const NumericInput({
     Key? key,
     this.style = Style.inlineStackButtons,
     required this.textEditingController,
@@ -48,31 +48,31 @@ class NumericInput extends StatefulWidget {
     this.decrementButtonIconColor,
     this.resetButtonColor,
     this.resetButtonIconColor,
-    this.iosTheme,
     this.inputBoxColor,
     this.borderRadius,
     this.borderStyle,
     this.borderWidth = 2.0,
     this.borderSide,
     this.inputBorderColor,
+    this.iosTheme,
     this.materialTheme,
   })  : assert(isInteger != isDouble),
         assert(useCupertino == null || useMaterial == null),
         super(key: key);
 
   final TextEditingController textEditingController;
-  late final Style style;
+  final Style style;
   final num initialValue;
   final String label;
   final bool isNegativeValid;
   final bool isInteger;
   final bool isDouble;
   final bool readOnly;
-  late final bool canReset;
-  late final bool canIncrement;
-  late final bool canDecrement;
-  late final bool? useMaterial;
-  late final bool? useCupertino;
+  final bool canReset;
+  final bool canIncrement;
+  final bool canDecrement;
+  final bool? useMaterial;
+  final bool? useCupertino;
   final BoxDecoration? decoration;
   final EdgeInsets? padding;
   final Widget? prefix;
